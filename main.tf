@@ -303,7 +303,6 @@ resource "aws_launch_template" "template" {
   }
 
   lifecycle {
-    create_before_destroy = true
     ignore_changes        = [image_id, latest_version]
   }
 
@@ -332,10 +331,6 @@ resource "aws_autoscaling_group" "asg" {
   launch_template {
     id      = aws_launch_template.template.id
     version = "$Latest"
-  }
-
-  lifecycle {
-    create_before_destroy = true
   }
 
   dynamic "warm_pool" {
