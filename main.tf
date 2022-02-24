@@ -58,15 +58,19 @@ resource "aws_security_group_rule" "lb-ingress" {
   protocol  = "tcp"
 
   source_security_group_id = each.key
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_lb_target_group" "tg" {
   count = local.setup_lb ? 1 : 0
 
-  name     = "${local.service}-template"
-  port     = var.port
-  protocol = var.protocol
-  vpc_id   = data.aws_subnet.exemplar.vpc_id
+  name_prefix = substr(local.service, 0, 6)
+  port        = var.port
+  protocol    = var.protocol
+  vpc_id      = data.aws_subnet.exemplar.vpc_id
 
   load_balancing_algorithm_type = var.load_balancing_algorithm_type
 
@@ -79,6 +83,10 @@ resource "aws_lb_target_group" "tg" {
     matcher             = lookup(var.health_check, "matcher", null)
     path                = lookup(var.health_check, "path", null)
     port                = lookup(var.health_check, "port", "traffic-port")
+  }
+
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
