@@ -3,6 +3,16 @@
 BREAKING CHANGES:
 
 * For web services, the created target group now uses a name_prefix of the first six characters of service_name. This will require a recreating of the target group resource on updates.
+* Now requires a providers = { aws.meta = provider } additional provider
+* Now requires account_canonical_slug input
+* Now requires the prescence of an /omat/organization_prefix parameter in the account used by the configured aws.meta provider
+* No longer takes organization_prefix as an input
+
+ENHANCEMENTS:
+
+* Automatically provides /{prefix}/config/{service_name}/lb_listener_arns for web services
+* Automatically provides /{prefix}/config/{service_name}/architecture, equal to the processor architecture of the instance type for the service
+* Allows passing tags to attach to created resources other than the autoscaling group.
 
 BUG FIXES:
 
