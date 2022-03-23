@@ -11,15 +11,46 @@ This is a complete example of a minimal serviceomat setup for a service that doe
 
 
 ```hcl
+provider "aws" {
+  alias = "meta"
+}
+
+data "aws_caller_identity" "current" {}
+
 variable "subnet_ids" {
   description = "A list of subnets to run the service in."
   type        = list(string)
 }
 
+# Skip this if you already have a configured omat organiztion prefix!
+resource "aws_ssm_parameter" "org_prefix" {
+  name  = "/omat/organization_prefix"
+  type  = "String"
+  value = "myorg"
+}
+
+# Skip this if you have already have an accountomat configuration for the account you want the service in!
+module "accountomat_parameters" {
+  source = "GoCarrot/accountomat/aws//modules/parameters"
+
+  account_id      = data.aws_caller_identity.current.id
+  admin_role_name = "admin"
+  environment     = "production"
+  name            = "Account"
+  purpose         = "Account"
+  slug            = "Account"
+
+  depends_on = [aws_ssm_parameter.org_prefix]
+}
+
 module "example_service" {
   source = "GoCarrot/serviceomat/aws"
 
-  organization_prefix = "myorg"
+  providers = {
+    aws.meta = aws.meta
+  }
+
+  account_canonical_slug = module.accountomat_parameters.canonical_slug
 
   service_name  = "example"
   subnet_ids    = var.subnet_ids
@@ -64,10 +95,35 @@ variable "hosts" {
   type        = list(string)
 }
 
+# Skip this if you already have a configured omat organiztion prefix!
+resource "aws_ssm_parameter" "org_prefix" {
+  name  = "/omat/organization_prefix"
+  type  = "String"
+  value = "myorg"
+}
+
+# Skip this if you have already have an accountomat configuration for the account you want the service in!
+module "accountomat_parameters" {
+  source = "GoCarrot/accountomat/aws//modules/parameters"
+
+  account_id      = data.aws_caller_identity.current.id
+  admin_role_name = "admin"
+  environment     = "production"
+  name            = "Account"
+  purpose         = "Account"
+  slug            = "Account"
+
+  depends_on = [aws_ssm_parameter.org_prefix]
+}
+
 module "example_service" {
   source = "GoCarrot/serviceomat/aws"
 
-  organization_prefix = "myorg"
+  providers = {
+    aws.meta = aws.meta
+  }
+
+  account_canonical_slug = module.accountomat_parameters.canonical_slug
 
   service_name  = "example"
   subnet_ids    = var.subnet_ids
@@ -119,14 +175,6 @@ data "aws_ssm_parameter" "lb_listener_arns" {
   name = "${local.param_prefix}/config/core/listener_arns"
 }
 
-resource "aws_ssm_parameter" "lb_listener_arns" {
-  provider = aws.admin
-
-  name  = "${local.param_prefix}/config/${local.service}/listener_arns"
-  type  = "StringList"
-  value = data.aws_ssm_parameter.lb_listener_arns.value
-}
-
 data "aws_key_pair" "new-laptop" {
   key_name = "new-laptop"
 }
@@ -160,7 +208,13 @@ resource "aws_security_group" "example" {
 }
 
 module "example_service" {
-  source = "./modules/service_o_mat"
+  source = "GoCarrot/serviceomat/aws"
+
+  providers = {
+    aws.meta = aws.meta
+  }
+
+  account_canonical_slug = terraform.workspace
 
   service_name  = "example"
   subnet_ids    = split(",", data.aws_ssm_parameter.subnet_ids.value)
@@ -205,7 +259,13 @@ EOT
 }
 
 module "example-sidekiq_service" {
-  source = "./modules/service_o_mat"
+  source = "GoCarrot/serviceomat/aws"
+
+  providers = {
+    aws.meta = aws.meta
+  }
+
+  account_canonical_slug = terraform.workspace
 
   service_name  = "example-sidekiq"
   subnet_ids    = split(",", data.aws_ssm_parameter.subnet_ids.value)
