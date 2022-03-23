@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-variable "organization_prefix" {
-  description = "The prefix to give to all parameters and log groups for organiztion."
+variable "account_canonical_slug" {
+  description = "The canonical slug of the account that the service is being deployed in."
   type        = string
-  default     = "teak"
 }
 
 variable "service_name" {
@@ -177,6 +176,15 @@ variable "additional_tags_for_asg_instances" {
   description = <<-EOT
   Map of additional tags to propogate to EC2 instances managed by the AutoSclaing Group. If attach_default_tags_to_asg_instances is
   true, tags specified here will override default tags in the event of a conflict.
+  EOT
+  default     = {}
+}
+
+variable "tags" {
+  type        = map(string)
+  description = <<-EOT
+  Tags to attach to created sources. WILL NOT BE ATTACHED TO ASG INSTANCES. Use additional_tags_for_asg_instances to
+  control tags assigned to ASG instances. Tags here will override default tags in the event of a conflict.
   EOT
   default     = {}
 }

@@ -17,22 +17,41 @@ terraform {
     aws = {
       source  = "hashicorp/aws"
       version = ">= 3, < 5"
+
+      configuration_aliases = [aws.meta]
     }
   }
 }
 
 data "aws_default_tags" "tags" {}
 
+data "aws_ssm_parameter" "account-info" {
+  provider = aws.meta
+
+  name = "/omat/account_registry/${var.account_canonical_slug}"
+}
+
+data "aws_ssm_parameter" "organization-prefix" {
+  provider = aws.meta
+
+  name = "/omat/organization_prefix"
+}
+
 locals {
-  setup_lb     = length(var.lb_listener_arns) > 0
-  service      = var.service_name
+  setup_lb = length(var.lb_listener_arns) > 0
+  service  = var.service_name
 
   default_asg_health_check_type = local.setup_lb ? "ELB" : "EC2"
   asg_health_check_type         = coalesce(var.health_check_type, local.default_asg_health_check_type)
   default_tags                  = { for key, value in data.aws_default_tags.tags.tags : key => value if var.attach_default_tags_to_asg_instances }
-  our_tags                      = merge(local.default_tags, var.additional_tags_for_asg_instances)
+  asg_tags                      = merge(local.default_tags, var.additional_tags_for_asg_instances)
+
+  tags = { for key, value in var.tags : key => value if lookup(data.aws_default_tags.tags.tags, key, null) != value }
 
   create_role = var.create_role
+
+  account_info        = jsondecode(nonsensitive(data.aws_ssm_parameter.account-info.value))
+  organization_prefix = nonsensitive(data.aws_ssm_parameter.organization-prefix.value)
 }
 
 data "aws_subnet" "exemplar" {
@@ -45,6 +64,8 @@ resource "aws_security_group" "sg" {
   name        = "${local.service}-allow_lb"
   description = "Allows traffic from the load balancer to ${local.service}"
   vpc_id      = data.aws_subnet.exemplar.vpc_id
+
+  tags = local.tags
 }
 
 resource "aws_security_group_rule" "lb-ingress" {
@@ -84,6 +105,8 @@ resource "aws_lb_target_group" "tg" {
     path                = lookup(var.health_check, "path", null)
     port                = lookup(var.health_check, "port", "traffic-port")
   }
+
+  tags = local.tags
 
   lifecycle {
     create_before_destroy = true
@@ -182,6 +205,30 @@ resource "aws_lb_listener_rule" "listener" {
       }
     }
   }
+
+  tags = local.tags
+}
+
+resource "aws_ssm_parameter" "lb_listener_arns" {
+  count = local.setup_lb ? 1 : 0
+
+  provider = aws.meta
+
+  name  = "${local.account_info["prefix"]}/config/${local.service}/listener_arns"
+  type  = "StringList"
+  value = join(",", var.lb_listener_arns)
+
+  tags = local.tags
+}
+
+resource "aws_ssm_parameter" "architecture" {
+  provider = aws.meta
+
+  name  = "${local.account_info["prefix"]}/config/${local.service}/architecture"
+  type  = "String"
+  value = local.instance_arch
+
+  tags = local.tags
 }
 
 data "aws_ssm_parameter" "stub-ami" {
@@ -246,19 +293,23 @@ resource "aws_iam_role" "role" {
   count = local.create_role ? 1 : 0
 
   name = "${title(local.service)}Role"
-  path = "/${var.organization_prefix}/service-role/"
+  path = "/${local.organization_prefix}/service-role/"
 
   description = "Role assumed by servers running the ${local.service} service."
 
   assume_role_policy = data.aws_iam_policy_document.allow_ec2_assume.json
+
+  tags = local.tags
 }
 
 resource "aws_iam_instance_profile" "instance-profile" {
   count = local.create_role ? 1 : 0
 
   name = "${title(local.service)}InstanceProfile"
-  path = "/${var.organization_prefix}/service-role/"
+  path = "/${local.organization_prefix}/service-role/"
   role = aws_iam_role.role[0].name
+
+  tags = local.tags
 }
 
 data "aws_iam_policy" "default-policies" {
@@ -311,7 +362,7 @@ resource "aws_launch_template" "template" {
   }
 
   lifecycle {
-    ignore_changes        = [image_id, latest_version]
+    ignore_changes = [image_id, latest_version]
   }
 
   dynamic "iam_instance_profile" {
@@ -327,6 +378,8 @@ resource "aws_launch_template" "template" {
   }
 
   user_data = var.user_data != null && length(var.user_data) > 0 ? base64encode(var.user_data) : ""
+
+  tags = local.tags
 }
 
 resource "aws_autoscaling_group" "asg" {
@@ -354,15 +407,15 @@ resource "aws_autoscaling_group" "asg" {
   target_group_arns = aws_lb_target_group.tg[*].id
 
   tags = concat(
-    [for k, v in local.our_tags : { key = k, value = v, propagate_at_launch = true }],
+    [for k, v in local.asg_tags : { key = k, value = v, propagate_at_launch = true }],
     [
       {
-        key                 = "${var.organization_prefix}:min_size"
+        key                 = "${local.organization_prefix}:min_size"
         value               = var.min_instances
         propagate_at_launch = false
       },
       {
-        key                 = "${var.organization_prefix}:max_size"
+        key                 = "${local.organization_prefix}:max_size"
         value               = var.max_instances
         propagate_at_launch = false
       }
