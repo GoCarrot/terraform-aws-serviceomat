@@ -45,6 +45,21 @@ locals {
   asg_health_check_type         = coalesce(var.health_check_type, local.default_asg_health_check_type)
   default_tags                  = { for key, value in data.aws_default_tags.tags.tags : key => value if var.attach_default_tags_to_asg_instances }
   asg_tags                      = merge(local.default_tags, var.additional_tags_for_asg_instances)
+  asg_tag_structures = concat(
+    [for k, v in local.asg_tags : { key = k, value = v, propagate_at_launch = true }],
+    [
+      {
+        key                 = "${local.organization_prefix}:min_size"
+        value               = var.min_instances
+        propagate_at_launch = false
+      },
+      {
+        key                 = "${local.organization_prefix}:max_size"
+        value               = var.max_instances
+        propagate_at_launch = false
+      }
+    ]
+  )
 
   tags = { for key, value in var.tags : key => value if lookup(data.aws_default_tags.tags.tags, key, null) != value }
 
@@ -406,21 +421,15 @@ resource "aws_autoscaling_group" "asg" {
 
   target_group_arns = aws_lb_target_group.tg[*].id
 
-  tags = concat(
-    [for k, v in local.asg_tags : { key = k, value = v, propagate_at_launch = true }],
-    [
-      {
-        key                 = "${local.organization_prefix}:min_size"
-        value               = var.min_instances
-        propagate_at_launch = false
-      },
-      {
-        key                 = "${local.organization_prefix}:max_size"
-        value               = var.max_instances
-        propagate_at_launch = false
-      }
-    ]
-  )
+  dynamic "tag" {
+    for_each = local.asg_tag_structures
+
+    content {
+      key                 = tag.value.key
+      value               = tag.value.value
+      propagate_at_launch = tag.value.propagate_at_launch
+    }
+  }
 }
 
 data "aws_cloudwatch_log_groups" "ancillary" {
