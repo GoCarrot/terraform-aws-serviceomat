@@ -239,6 +239,12 @@ variable "iam_instance_profile" {
 
 variable "create_logs_query" {
   type        = bool
-  description = "Create a CloudWatch Logs Insights query to grab all logs from all log groups for this service."
+  description = <<-EOT
+  Create a CloudWatch Logs Insights query to grab all logs from all log groups for this service.
+
+  This uses data sources to determine which log groups to query. If you are creating log groups for the service in the same
+  module that you are including serviceomat in, be sure to set a depends_on = [aws_cloudwatch_log_group...] on this serviceomat
+  module so that the log groups are available before we attempt to look them up.
+EOT
   default     = false
 }
