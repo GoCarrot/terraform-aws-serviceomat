@@ -236,3 +236,9 @@ variable "iam_instance_profile" {
   description = "ARN of an IAM Instance Profile to associate with launched instances."
   default     = null
 }
+
+variable "create_logs_query" {
+  type        = bool
+  description = "Create a CloudWatch Logs Insights query to grab all logs from all log groups for this service."
+  default     = false
+}

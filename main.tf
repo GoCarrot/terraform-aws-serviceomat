@@ -422,3 +422,35 @@ resource "aws_autoscaling_group" "asg" {
     ]
   )
 }
+
+data "aws_cloudwatch_log_groups" "ancillary" {
+  count = var.create_logs_query ? 1 : 0
+
+  log_group_name_prefix = "/${local.organization_prefix}/server/${local.asg_tags["Environment"]}/ancillary"
+}
+
+data "aws_cloudwatch_log_groups" "service" {
+  count = var.create_logs_query ? 1 : 0
+
+  log_group_name_prefix = "/${local.organization_prefix}/server/${local.asg_tags["Environment"]}/service/${local.asg_tags["Service"]}"
+}
+
+resource "aws_cloudwatch_query_definition" "unified-logs" {
+  count = var.create_logs_query ? 1 : 0
+
+  name = "${local.organization_prefix}/${local.asg_tags["Environment"]}/${local.asg_tags["Service"]}/UnifiedLogs"
+
+  query_string = <<-EOT
+  fields @timestamp, @message
+  | parse @logStream "${local.asg_tags["Service"]}.*" as host
+  | parse @log /[0-9]*:.*\/(?<group>[a-zA-Z0-9-_]+$)/
+  | filter @logStream like /${local.asg_tags["Service"]}\..*/
+  | sort host asc, @timestamp desc
+  | display host, group, @timestamp, @message
+EOT
+
+  log_group_names = setunion(
+    data.aws_cloudwatch_log_groups.ancillary[count.index].log_group_names,
+    data.aws_cloudwatch_log_groups.service[count.index].log_group_names
+  )
+}
