@@ -1,3 +1,13 @@
+## 0.0.4
+
+FEATURES:
+
+* Create a [CloudWatch Logs Insights Query](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/CWL_AnalyzeLogData_RunSampleQuery.html) which will search all log groups that the service can log to using the prototype LogAccess attribute based access control IAM policy. Enable this by setting `create_logs_query` to true.
+
+ENHANCEMENTS:
+
+* Switch to dynamic `tag` block in aws_autoscaling_group instead of deprecated `tags` attribute.
+
 ## 0.0.3
 
 BREAKING CHANGES:
