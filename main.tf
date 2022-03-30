@@ -454,7 +454,7 @@ resource "aws_cloudwatch_query_definition" "unified-logs" {
   | parse @logStream "${local.asg_tags["Service"]}.*" as host
   | parse @log /[0-9]*:.*\/(?<group>[a-zA-Z0-9-_]+$)/
   | filter @logStream like /${local.asg_tags["Service"]}\..*/
-  | sort host asc, @timestamp desc
+  | sort @timestamp desc
   | display host, group, @timestamp, @message
 EOT
 
