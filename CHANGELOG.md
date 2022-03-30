@@ -1,3 +1,9 @@
+## 0.0.5
+
+ENHANCEMENTS:
+
+* Adjust sorting and column order for unified logs query to make it more skimmable.
+
 ## 0.0.4
 
 FEATURES:
