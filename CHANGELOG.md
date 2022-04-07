@@ -1,3 +1,9 @@
+## 0.0.6
+
+ENHANCEMENTS:
+
+* Added placement_strategy which will manage an aws_placement_group resource to influence distribution of service instances. This value defaults to "7", which will partition each AZ the service runs in into seven distinct zones with separate networks and power sources and attempt to distribute running instances evenly across partitions.
+
 ## 0.0.5
 
 ENHANCEMENTS:
