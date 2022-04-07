@@ -397,12 +397,21 @@ resource "aws_launch_template" "template" {
   tags = local.tags
 }
 
+resource "aws_placement_group" "group" {
+  count = var.placement_strategy != null ? 1 : 0
+
+  name            = "${local.service}-placement"
+  strategy        = can(regex("^[1-7]$", var.placement_strategy)) ? "partition" : var.placement_strategy
+  partition_count = can(regex("^[1-7]$", var.placement_strategy)) ? parseint(var.placement_strategy, 10) : null
+}
+
 resource "aws_autoscaling_group" "asg" {
   name     = "${local.service}-template"
   min_size = 0
   max_size = 0
 
   vpc_zone_identifier = var.subnet_ids
+  placement_group     = try(aws_placement_group.group[0].id, null)
 
   launch_template {
     id      = aws_launch_template.template.id

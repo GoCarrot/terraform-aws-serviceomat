@@ -248,3 +248,37 @@ variable "create_logs_query" {
 EOT
   default     = false
 }
+
+variable "placement_strategy" {
+  type        = string
+  description = <<-EOT
+  Determines how instances for this service are distributed within AZs. One of null, "spread", "cluster", or "1"-"7".
+
+  If null, instances will deploy using AWSs default spread strategy, which I _suspect_ is equivalent to "7" applied to
+  all EC2 instances.
+
+  If "spread", will launch EC2 instances on distinct racks with separate network and power source. This minimizes
+  correlated failures across service instances. A maximum of 7 instances per AZ can be launched with this configuration.
+
+  If "cluster", will attempt to colocate instances as much as possible. This may include colocating instances on the
+  same underlying server. This may interfere with autoscaling.
+
+  If "1"-"7", will partition each AZ the service is deployed to into the given number. EC2 will attempt to distribute
+  instances across partitions to reduce correlated failures, while still potentially colocating instances. There are
+  no limits to the number of running instances except those imposed by your account.
+
+  It is not possible to change this variable from a set value to null. If you must change this variable from a previously
+  set value to null, you must manually destroy the AutoScaling Group created by this module. Note that this is a safe operation,
+  the AutoScaling Group managed by this module is exclusively used during service deployments. When a service is not
+  actively in the process of being deployed the AutoScaling Group may be modified, destroyed, or recreated without consequence.
+
+  Defaults to "7".
+EOT
+
+  default = "7"
+
+  validation {
+    condition     = var.placement_strategy == null || can(regex("(^spread$)|(^cluster$)|(^[1-7]$)", var.placement_strategy))
+    error_message = "The placement_strategy must be one of null, \"spread\", \"cluster\", or \"1\"-\"7\"."
+  }
+}
