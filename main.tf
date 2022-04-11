@@ -419,9 +419,7 @@ resource "aws_autoscaling_group" "asg" {
   }
 
   dynamic "warm_pool" {
-    for_each = [
-      var.warm_pool ? [{}] : []
-    ]
+    for_each = var.warm_pool ? [{}] : []
 
     content {}
   }
