@@ -1,3 +1,9 @@
+## 0.0.7
+
+BUG FIXES:
+
+* warm_pool = false should now correctly disable the warm pool.
+
 ## 0.0.6
 
 ENHANCEMENTS:
