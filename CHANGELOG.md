@@ -1,3 +1,9 @@
+## 0.1.1
+
+BUG FIXES:
+
+* Resolve issue when lb_security_group_ids is set but lb_listener_arns is not.
+
 ## 0.1.0
 
 BREAKING CHANGES:
