@@ -84,7 +84,7 @@ resource "aws_security_group" "sg" {
 }
 
 resource "aws_security_group_rule" "lb-ingress" {
-  for_each = var.lb_security_group_ids
+  for_each = local.setup_lb ? var.lb_security_group_ids : {}
 
   security_group_id = aws_security_group.sg[0].id
 
@@ -129,7 +129,7 @@ resource "aws_lb_target_group" "tg" {
 }
 
 resource "aws_lb_listener_rule" "listener" {
-  for_each = var.lb_listener_arns
+  for_each = local.setup_lb ? var.lb_listener_arns : {}
 
   listener_arn = each.value
   priority     = var.lb_priority + 40000
