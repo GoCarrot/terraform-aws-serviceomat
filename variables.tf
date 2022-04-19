@@ -78,15 +78,15 @@ variable "ami_owner_id" {
 }
 
 variable "lb_listener_arns" {
-  type        = list(string)
-  description = "List of ARNs for ALB listeners to receive traffic from. If empty, this service will not be configured to receive web traffic from an ALB."
-  default     = []
+  type        = map(string)
+  description = "Map of ARNs for ALB listeners to receive traffic from. Keys should be known at plan time. If empty, this service will not be configured to receive web traffic from an ALB."
+  default     = {}
 }
 
 variable "lb_security_group_ids" {
-  type        = list(string)
-  description = "List of security groups attached to an ALB. If lb_listener_arns is non-empty, this module will create a security group which permits ingress on var.port from all security groups here."
-  default     = []
+  type        = map(string)
+  description = "Map of security groups attached to an ALB. Keys should be known at plan time. If lb_listener_arns is non-empty, this module will create a security group which permits ingress on var.port from all security groups here."
+  default     = {}
 }
 
 variable "port" {

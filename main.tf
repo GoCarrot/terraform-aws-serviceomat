@@ -84,7 +84,7 @@ resource "aws_security_group" "sg" {
 }
 
 resource "aws_security_group_rule" "lb-ingress" {
-  for_each = local.setup_lb ? toset(var.lb_security_group_ids) : toset([])
+  for_each = var.lb_security_group_ids
 
   security_group_id = aws_security_group.sg[0].id
 
@@ -93,7 +93,7 @@ resource "aws_security_group_rule" "lb-ingress" {
   to_port   = var.port
   protocol  = "tcp"
 
-  source_security_group_id = each.key
+  source_security_group_id = each.value
 
   lifecycle {
     create_before_destroy = true
@@ -129,7 +129,7 @@ resource "aws_lb_target_group" "tg" {
 }
 
 resource "aws_lb_listener_rule" "listener" {
-  for_each = toset(var.lb_listener_arns)
+  for_each = var.lb_listener_arns
 
   listener_arn = each.value
   priority     = var.lb_priority + 40000
@@ -231,7 +231,7 @@ resource "aws_ssm_parameter" "lb_listener_arns" {
 
   name  = "${local.account_info["prefix"]}/config/${local.service}/listener_arns"
   type  = "StringList"
-  value = join(",", var.lb_listener_arns)
+  value = join(",", values(var.lb_listener_arns))
 
   tags = local.tags
 }
