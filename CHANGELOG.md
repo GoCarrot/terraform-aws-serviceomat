@@ -1,3 +1,14 @@
+## 0.1.0
+
+BREAKING CHANGES:
+
+* State keys for aws_security_group_rule.lb-ingress and aws_lb_listener_rule.listener have changed in order to support configuring a load balancer and a serviceomat instance in the same module. The moved block is insufficiently powerful to handle this automatically -- you will need to perform terraform state mv commands. It is unsafe to allow terraform to delete/create these resources for you over multiple applies as this may prevent the load balancer from being able to communicate with service instances for the duration.
+* listener_arns and lb_security_group_ids are now map types instead of list types. Keys in the map must be known at plan time -- that is they should be hardcoded or at least inferrable without depending on the created source.
+
+ENHANCEMENTS:
+
+* Now support configuring a load balancer and serviceomat instance in the same module.
+
 ## 0.0.7
 
 BUG FIXES:
