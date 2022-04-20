@@ -158,11 +158,11 @@ resource "aws_lb_listener_rule" "listener" {
 
     content {
       dynamic "http_header" {
-        for_each = condition.value["https_headers"]
+        for_each = condition.value["http_headers"]
 
         content {
-          key    = http_header.value["http_header_name"]
-          values = http_header.value["values"]
+          http_header_name = http_header.value["http_header_name"]
+          values           = http_header.value["values"]
         }
       }
     }
