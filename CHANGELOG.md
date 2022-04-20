@@ -1,3 +1,9 @@
+## 0.1.2
+
+BUG FIXES:
+
+* Fix using http_headers in lb_conditions.
+
 ## 0.1.1
 
 BUG FIXES:
