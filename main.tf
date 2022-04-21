@@ -16,7 +16,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = ">= 3, < 5"
+      version = ">= 3.72, < 5"
 
       configuration_aliases = [aws.meta]
     }
@@ -374,6 +374,7 @@ resource "aws_launch_template" "template" {
     http_endpoint               = "enabled"
     http_tokens                 = "required"
     http_put_response_hop_limit = 1
+    instance_metadata_tags      = var.instance_metadata_tags ? "enabled" : "disabled"
   }
 
   lifecycle {

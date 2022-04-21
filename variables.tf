@@ -282,3 +282,9 @@ EOT
     error_message = "The placement_strategy must be one of null, \"spread\", \"cluster\", or \"1\"-\"7\"."
   }
 }
+
+variable "instance_metadata_tags" {
+  type        = bool
+  description = "Enables or disables access to instance tags from the instance metadata service."
+  default     = true
+}
