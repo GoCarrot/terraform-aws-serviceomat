@@ -1,3 +1,9 @@
+## 0.1.3
+
+ENHANCEMENTS:
+
+* Add instance_metadata_tags input to enable or disable instance tags in IMDS. Default to true (enabled).
+
 ## 0.1.2
 
 BUG FIXES:
