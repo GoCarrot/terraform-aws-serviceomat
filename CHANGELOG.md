@@ -1,3 +1,9 @@
+## 0.2.0
+
+BREAKING CHANGES:
+
+* Now outputs json encoded listener_arns SSM parameter. You must update to deployomat 0.2.9 or greater before using serviceomat 0.2.0.
+
 ## 0.1.3
 
 ENHANCEMENTS:
