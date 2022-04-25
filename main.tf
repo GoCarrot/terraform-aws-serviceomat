@@ -230,8 +230,8 @@ resource "aws_ssm_parameter" "lb_listener_arns" {
   provider = aws.meta
 
   name  = "${local.account_info["prefix"]}/config/${local.service}/listener_arns"
-  type  = "StringList"
-  value = join(",", values(var.lb_listener_arns))
+  type  = "String"
+  value = jsonencode(var.lb_listener_arns)
 
   tags = local.tags
 }
