@@ -288,3 +288,9 @@ variable "instance_metadata_tags" {
   description = "Enables or disables access to instance tags from the instance metadata service."
   default     = true
 }
+
+variable "kms_key_id" {
+  type        = string
+  description = "The KMS key to use for encrypting instance EBS volumes.  If null, EBS volumes will not be encrypted."
+  default     = null
+}
