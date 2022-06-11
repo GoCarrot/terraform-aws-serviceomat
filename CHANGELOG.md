@@ -1,3 +1,13 @@
+## 0.2.1
+
+NEW FEATURES:
+
+* EBS volumes of launched instances can now be encrypted by setting the `kms_key_id` input ([#1](https://github.com/GoCarrot/terraform-aws-serviceomat/pull/1))
+
+SPECIAL THANKS:
+
+* [@MrJoy](https://github.com/MrJoy)
+
 ## 0.2.0
 
 BREAKING CHANGES:
