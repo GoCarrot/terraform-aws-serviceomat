@@ -367,6 +367,9 @@ resource "aws_launch_template" "template" {
       volume_type           = "gp3"
       iops                  = 3000
       throughput            = 125
+
+      kms_key_id = var.kms_key_id
+      encrypted  = var.kms_key_id != null
     }
   }
 

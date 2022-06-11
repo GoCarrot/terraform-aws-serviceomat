@@ -288,3 +288,9 @@ variable "instance_metadata_tags" {
   description = "Enables or disables access to instance tags from the instance metadata service."
   default     = true
 }
+
+variable "kms_key_id" {
+  type        = string
+  description = "The KMS key to use for encrypting instance EBS volumes.  If null, EBS volumes will not be encrypted.  The KMS key policy must grant access to the autoscaler.  For details, see: https://web.archive.org/web/20220325062332/https://docs.aws.amazon.com/autoscaling/ec2/userguide/key-policy-requirements-EBS-encryption.html"
+  default     = null
+}

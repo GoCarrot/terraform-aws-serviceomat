@@ -76,13 +76,13 @@ variable "subnet_ids" {
 }
 
 variable "lb_listener_arns" {
-  description = "A list of Application Load Balancer listener ARNs that this service should receive traffic from."
-  type        = list(string)
+  description = "A map of Application Load Balancer listener ARNs that this service should receive traffic from.  Key is whatever you want, value is the ARN."
+  type        = map(string)
 }
 
 variable "lb_security_group_ids" {
-  description = "A list of security group ids attached to the load balancer."
-  type        = list(string)
+  description = "A map of security group ids attached to the load balancer.  Key is whatever you want, value is the ID."
+  type        = map(string)
 }
 
 variable "lb_priority" {
@@ -225,8 +225,8 @@ module "example_service" {
   ami_owner_id   = data.aws_ssm_parameter.ci-cd-account_id.value
   ami_name_regex = "${local.environment}_example.*"
 
-  lb_listener_arns      = [for arn in split(",", nonsensitive(data.aws_ssm_parameter.lb_listener_arns.value)) : arn if arn != "0"]
-  lb_security_group_ids = split(",", nonsensitive(data.aws_ssm_parameter.lb_security_group_ids.value))
+  lb_listener_arns      = jsondecode(nonsensitive(data.aws_ssm_parameter.lb_listener_arns.value))
+  lb_security_group_ids = jsondecode(nonsensitive(data.aws_ssm_parameter.lb_security_group_ids.value))
   lb_priority           = var.lb_priority
   lb_conditions = [{
     host_headers = var.hosts
