@@ -342,6 +342,8 @@ resource "aws_iam_role_policy_attachment" "default-policies" {
 
 locals {
   instance_profile_arn = try(coalescelist(try(compact([var.iam_instance_profile]), []), aws_iam_instance_profile.instance-profile[*].arn), [])
+  subnet_randomizer    = { for id in var.subnet_ids : sha256("${local.service}-${id}") => id }
+  subnet               = local.subnet_randomizer[sort(keys(local.subnet_randomizer))[0]]
 }
 
 resource "aws_launch_template" "template" {
@@ -353,8 +355,6 @@ resource "aws_launch_template" "template" {
 
   instance_type = var.instance_type
   ebs_optimized = true
-
-  vpc_security_group_ids = concat(aws_security_group.sg[*].id, var.instance_security_group_ids)
 
   instance_initiated_shutdown_behavior = "terminate"
 
@@ -394,6 +394,24 @@ resource "aws_launch_template" "template" {
 
   monitoring {
     enabled = var.detailed_instance_monitoring
+  }
+
+  network_interfaces {
+    subnet_id = local.subnet
+    security_groups = concat(aws_security_group.sg[*].id, var.instance_security_group_ids)
+  }
+
+  dynamic "tag_specifications" {
+    # elastic-gpu is intentionally omitted from this list.
+    # The EC2 API gets mad and logs errors to cloudtrail if autoscaling tries to
+    # tag elastic-gpus when the request has no elastic-gpus. I do not want spurious
+    # errors in my cloudtrail logs.
+    for_each = toset(["instance", "volume", "network-interface", "spot-instances-request"])
+
+    content {
+      resource_type = tag_specifications.value
+      tags          = { for key, value in merge(local.default_tags, local.tags) : key => value if key != "Managed" }
+    }
   }
 
   user_data = var.user_data != null && length(var.user_data) > 0 ? base64encode(var.user_data) : ""
