@@ -406,7 +406,11 @@ resource "aws_launch_template" "template" {
     # The EC2 API gets mad and logs errors to cloudtrail if autoscaling tries to
     # tag elastic-gpus when the request has no elastic-gpus. I do not want spurious
     # errors in my cloudtrail logs.
-    for_each = toset(["instance", "volume", "network-interface", "spot-instances-request"])
+    #
+    # spot-instances-request is intentionally omitted from this list.
+    # If an ASG isn't requesting spot intances, having spot-instances-request in the
+    # list causes the ASG to fail to boot instances.
+    for_each = toset(["instance", "volume", "network-interface"])
 
     content {
       resource_type = tag_specifications.value
