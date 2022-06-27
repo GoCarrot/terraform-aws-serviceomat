@@ -1,3 +1,11 @@
+## 0.3.0
+
+NEW FEATURES:
+
+* Assigns tags to instances launched directly from the launch template
+* Assigns a default subnet to all launch templates
+* Now requires deployomat >= 0.2.10
+
 ## 0.2.1
 
 NEW FEATURES:
