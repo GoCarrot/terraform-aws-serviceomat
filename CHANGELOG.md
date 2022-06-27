@@ -1,3 +1,10 @@
+## 0.3.1
+
+BUG FIXES:
+
+* Do not tag spot-instances-request so ASGs can bring up instances.
+* Support instance types that do not support EBS optimized.
+
 ## 0.3.0
 
 NEW FEATURES:
