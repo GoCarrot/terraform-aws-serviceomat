@@ -354,7 +354,7 @@ resource "aws_launch_template" "template" {
   image_id = local.default_ami_id
 
   instance_type = var.instance_type
-  ebs_optimized = true
+  ebs_optimized = data.aws_ec2_instance_type.instance-info.ebs_optimized_support != "unsupported"
 
   instance_initiated_shutdown_behavior = "terminate"
 
