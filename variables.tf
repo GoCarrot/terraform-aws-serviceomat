@@ -201,6 +201,12 @@ variable "lb_priority" {
   default     = 51000
 }
 
+variable "lb_deregistration_delay" {
+  description = "The length of time in seconds to allow instances to drain from the load balancer."
+  type        = number
+  default     = 300
+}
+
 variable "health_check_type" {
   type        = string
   description = "See https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group#health_check_type. If null, will default to ELB when lb_listener_arns is non-empty."

@@ -110,6 +110,8 @@ resource "aws_lb_target_group" "tg" {
 
   load_balancing_algorithm_type = var.load_balancing_algorithm_type
 
+  deregistration_delay = var.lb_deregistration_delay
+
   health_check {
     enabled             = lookup(var.health_check, "enabled", true)
     healthy_threshold   = lookup(var.health_check, "healthy_threshold", 3)
