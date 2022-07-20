@@ -1,3 +1,9 @@
+## 0.3.2
+
+ENHANCEMENTS:
+
+* Make the load balancer deregistration delay configurable.
+
 ## 0.3.1
 
 BUG FIXES:
