@@ -416,7 +416,7 @@ resource "aws_launch_template" "template" {
 
     content {
       resource_type = tag_specifications.value
-      tags          = { for key, value in merge(local.default_tags, local.tags) : key => value if key != "Managed" }
+      tags          = { for key, value in local.asg_tags : key => value if key != "Managed" }
     }
   }
 
