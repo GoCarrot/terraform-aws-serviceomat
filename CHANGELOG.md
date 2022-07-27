@@ -1,3 +1,9 @@
+## 0.3.3
+
+ENHANCEMENTS:
+
+* Launch template instance tags are now sourced from the ASG tags instead of the resource tags. The main purpose for this is to allow instances to have a different set of tags than their associated IAM role.
+
 ## 0.3.2
 
 ENHANCEMENTS:
