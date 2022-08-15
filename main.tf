@@ -259,7 +259,7 @@ data "aws_ec2_instance_type" "instance-info" {
 }
 
 locals {
-  instance_arch = data.aws_ec2_instance_type.instance-info.supported_architectures[0]
+  instance_arch = data.aws_ec2_instance_type.instance-info.supported_architectures[length(data.aws_ec2_instance_type.instance-info.supported_architectures) - 1]
 }
 
 data "aws_ami_ids" "built-ami" {
