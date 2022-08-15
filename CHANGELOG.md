@@ -1,3 +1,9 @@
+## 0.3.4
+
+ENHANCEMENTS:
+
+* Prefer x86_64 over i386 for instance types which support both.
+
 ## 0.3.3
 
 ENHANCEMENTS:
