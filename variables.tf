@@ -131,7 +131,7 @@ EOT
 }
 
 variable "lb_conditions" {
-  type        = list(map(list(any)))
+  type        = map(object({priority=number, conditions=list(map(list(any)))}))
   description = <<-EOT
 The conditions under which a request should be routed from the LB to this service.
 Only used if the service is receiving web traffic from an ALB.
@@ -162,7 +162,7 @@ The query_strings and http_headers types are more complex.
   ]
 }]
 EOT
-  default     = []
+  default     = {}
 }
 
 variable "attach_default_tags_to_asg_instances" {
@@ -193,12 +193,6 @@ variable "warm_pool" {
   type        = bool
   description = "Allow the ASG to create a warm pool with default configuration."
   default     = true
-}
-
-variable "lb_priority" {
-  description = "The rule priority for this service in the primary load balancer. Required if lb_listener_arns is specified."
-  type        = number
-  default     = 51000
 }
 
 variable "lb_deregistration_delay" {
