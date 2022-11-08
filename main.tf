@@ -16,7 +16,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = ">= 3.72, < 5"
+      version = ">= 4.22, < 5"
 
       configuration_aliases = [aws.meta]
     }
@@ -452,6 +452,7 @@ resource "aws_placement_group" "group" {
   name            = "${local.service}-placement"
   strategy        = can(regex("^[1-7]$", var.placement_strategy)) ? "partition" : var.placement_strategy
   partition_count = can(regex("^[1-7]$", var.placement_strategy)) ? parseint(var.placement_strategy, 10) : null
+  spread_level    = var.placement_strategy == "spread" ? "rack" : null
 }
 
 resource "aws_autoscaling_group" "asg" {
