@@ -138,10 +138,14 @@ module "example_service" {
 
   lb_listener_arns      = var.lb_listener_arns
   lb_security_group_ids = var.lb_security_group_ids
-  lb_priority           = var.lb_priority
-  lb_conditions = [{
-    host_headers = var.hosts
-  }]
+  lb_conditions = {
+    service = {
+      priority   = var.lb_priority
+      conditions = [{
+        host_headers = var.hosts
+      }]
+    }
+  }
 
   # By default serviceomat assumes that your web service will be listening for requests on port 80.
   # port = 80
@@ -228,9 +232,14 @@ module "example_service" {
   lb_listener_arns      = jsondecode(nonsensitive(data.aws_ssm_parameter.lb_listener_arns.value))
   lb_security_group_ids = jsondecode(nonsensitive(data.aws_ssm_parameter.lb_security_group_ids.value))
   lb_priority           = var.lb_priority
-  lb_conditions = [{
-    host_headers = var.hosts
-  }]
+  lb_conditions = {
+    service = {
+      priority   = var.lb_priority
+      conditions = [{
+        host_headers = var.hosts
+      }]
+    }
+  }
 
   min_instances = var.min_size
   max_instances = var.max_size

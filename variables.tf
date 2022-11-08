@@ -133,34 +133,49 @@ EOT
 variable "lb_conditions" {
   type        = map(object({priority=number, conditions=list(map(list(any)))}))
   description = <<-EOT
-The conditions under which a request should be routed from the LB to this service.
+The conditions and priorities under which a request should be routed from the LB to this service.
 Only used if the service is receiving web traffic from an ALB.
-Refer to https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_listener_rule#condition-blocks
+Top level keys are used to uniquely identify the listener rule resource. For conditions,
+refer to https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_listener_rule#condition-blocks
 This is structured as a map, an example for host headers would be
-[{
-  host_headers = ["example.com", "*.example.com"]
-}].
+{
+  service = {
+    priority   = var.lb_priority
+    conditions = [{
+      host_headers = ["example.com", "*.example.com"]
+    }]
+  }
+}.
 
 The query_strings and http_headers types are more complex.
-[{
-  http_headers = [
-    {
-      http_header_name = "StupidSecretAuth"
-      values           = ["Password", "12345"]
-    },
-    {
-      http_header_name = "Service"
-      values           = ["Example"]
-    }
-  ]
+{
+  service = {
+    priority   = var.lb_priority
+    conditions = [{
+      http_headers = [
+        {
+          http_header_name = "StupidSecretAuth"
+          values           = ["Password", "12345"]
+        },
+        {
+          http_header_name = "Service"
+          values           = ["Example"]
+        }
+      ]
 
-  query_strings = [
-    {
-      key   = "myquery"
-      value = "hasavalue"
-    }
-  ]
-}]
+      query_strings = [
+        {
+          key   = "myquery"
+          value = "hasavalue"
+        }
+      ]
+    }]
+  }
+}
+
+If multiple top level keys are provided, multiple rules will be configured to direct traffic to the service.
+Think of top level keys as specificying 'OR' conditions, and additional entries in a conditions array
+specifying 'AND' conditions.
 EOT
   default     = {}
 }
