@@ -151,8 +151,6 @@ resource "aws_lb_target_group" "tg" {
   }
 }
 
-# TODO: This needs to be a crossjoin of conditions and lb listener arns
-# TODO: Specify lb priority on each condition
 resource "aws_lb_listener_rule" "listener" {
   for_each = local.setup_lb ? local.rule_setups : {}
 
