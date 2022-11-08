@@ -1,3 +1,38 @@
+## 0.4.0
+
+NEW FEATURES:
+
+* Services may now have multiple load balancer rules with different conditions and priorities.
+
+BUG FIXES:
+
+* No longer generates impossible changes to aws_placement_group when placement_strategy = "spread" and AWS provider version is >= 4.22.
+
+BREAKING CHANGES:
+
+* Now requires AWS provider version >= 4.22
+* lb_priority variable has been removed.
+* lb_conditions is now type map(object({priority=number, conditions=list(map(list(any)))}))
+* Example conversion:
+```
+# BEFORE
+lb_priority   = var.lb_priority
+lb_conditions = [{
+  host_headers = ["api.${var.api_host}", var.api_host]
+}]
+
+# AFTER
+lb_conditions = {
+  api = {
+    priority   = var.lb_priority
+    conditions = [{
+      host_headers = ["api.${var.api_host}", var.api_host]
+    }]
+  }
+}
+```
+* The destroy and recreate of lb listener rules for this migration is safe. Deployed rules are unaffected. Services with only a single entry in lb_conditions may be deployed by deployomat >= 0.2.10, services with multiple entries require deployomat >= 0.3.0.
+
 ## 0.3.4
 
 ENHANCEMENTS:
