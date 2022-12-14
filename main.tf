@@ -462,6 +462,7 @@ resource "aws_autoscaling_group" "asg" {
 
   vpc_zone_identifier = var.subnet_ids
   placement_group     = try(aws_placement_group.group[0].id, null)
+  enabled_metrics     = var.asg_metrics
 
   launch_template {
     id      = aws_launch_template.template.id

@@ -309,3 +309,9 @@ variable "kms_key_id" {
   description = "The KMS key to use for encrypting instance EBS volumes.  If null, EBS volumes will not be encrypted.  The KMS key policy must grant access to the autoscaler.  For details, see: https://web.archive.org/web/20220325062332/https://docs.aws.amazon.com/autoscaling/ec2/userguide/key-policy-requirements-EBS-encryption.html"
   default     = null
 }
+
+variable "asg_metrics" {
+  type        = list(string)
+  description = "The list of AutoScaling group metrics to enable. Refer to https://web.archive.org/web/20221016203736/https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_EnableMetricsCollection.html for the list of valid metrics."
+  default     = null
+}
