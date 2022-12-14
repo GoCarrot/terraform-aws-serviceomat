@@ -17,6 +17,11 @@ output "asg" {
   value       = aws_autoscaling_group.asg
 }
 
+output "target_group" {
+  description = "The Target Group created by this module, or null if var.lb_listener_arns is empty."
+  value       = try(aws_lb_target_group.tg[0], null)
+}
+
 output "launch_template" {
   description = "The EC2 launch template created by this module."
   value       = aws_launch_template.template
