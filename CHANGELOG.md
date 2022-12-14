@@ -1,3 +1,13 @@
+## 0.4.1
+
+NEW FEATURES:
+
+* AutoScaling Group metrics are now supported.
+
+ENHANCEMENTS:
+
+* Created target group is now provided as an output.
+
 ## 0.4.0
 
 NEW FEATURES:
