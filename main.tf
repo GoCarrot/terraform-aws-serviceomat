@@ -404,7 +404,7 @@ resource "aws_launch_template" "template" {
   }
 
   lifecycle {
-    ignore_changes = [image_id, latest_version]
+    ignore_changes = [image_id]
   }
 
   dynamic "iam_instance_profile" {
