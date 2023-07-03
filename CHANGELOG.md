@@ -1,3 +1,10 @@
+## 0.4.2
+
+ENHANCEMENTS:
+
+* Setting iam_instance_profile implicitly disables creating another role
+* Allow using AWS provider v5.
+
 ## 0.4.1
 
 NEW FEATURES:
