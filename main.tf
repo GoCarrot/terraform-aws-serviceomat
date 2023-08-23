@@ -84,7 +84,7 @@ locals {
 
   tags = { for key, value in var.tags : key => value if lookup(data.aws_default_tags.tags.tags, key, null) != value }
 
-  create_role = var.iam_instance_profile == null && var.create_role
+  create_role = var.create_role
 
   account_info        = jsondecode(nonsensitive(data.aws_ssm_parameter.account-info.value))
   organization_prefix = nonsensitive(data.aws_ssm_parameter.organization-prefix.value)
