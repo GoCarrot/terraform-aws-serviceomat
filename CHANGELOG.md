@@ -1,3 +1,9 @@
+## 0.4.3
+
+BUG FIXES:
+
+* No longer implicitly disables creating another role by setting iam_instance_profile. This breaks Terraform if the role is created in the same plan or comes from a data block.
+
 ## 0.4.2
 
 ENHANCEMENTS:
