@@ -131,7 +131,21 @@ EOT
 }
 
 variable "lb_conditions" {
-  type        = map(object({priority=number, conditions=list(map(list(any)))}))
+  type = map(
+    object({
+      priority = number,
+      conditions = list(
+        object({
+          host_headers         = optional(list(string)),
+          http_headers         = optional(list(object({ http_header_name = string, values = list(string) }))),
+          http_request_methods = optional(list(string)),
+          path_patthers        = optional(list(string)),
+          query_string         = optional(list(object({ key = optional(string), value = string }))),
+          source_ips           = optional(list(string))
+        })
+      )
+    })
+  )
   description = <<-EOT
 The conditions and priorities under which a request should be routed from the LB to this service.
 Only used if the service is receiving web traffic from an ALB.
