@@ -1,3 +1,9 @@
+## 0.4.4
+
+BUG FIXES:
+
+* Fixed having multiple lb_conditions with different types of conditions.
+
 ## 0.4.3
 
 BUG FIXES:
