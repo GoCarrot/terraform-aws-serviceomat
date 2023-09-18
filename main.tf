@@ -55,11 +55,11 @@ locals {
 
   rule_setups = {
     for pair in setproduct(local.listeners, local.conditions) :
-      "${pair[0].key}-${pair[1].key}" => {
-        listener_arn = pair[0].value
-        priority     = pair[1].value.priority
-        conditions   = pair[1].value.conditions
-      }
+    "${pair[0].key}-${pair[1].key}" => {
+      listener_arn = pair[0].value
+      priority     = pair[1].value.priority
+      conditions   = pair[1].value.conditions
+    }
   }
 
   default_asg_health_check_type = local.setup_lb ? "ELB" : "EC2"
@@ -420,7 +420,7 @@ resource "aws_launch_template" "template" {
   }
 
   network_interfaces {
-    subnet_id = local.subnet
+    subnet_id       = local.subnet
     security_groups = concat(aws_security_group.sg[*].id, var.instance_security_group_ids)
   }
 
