@@ -164,7 +164,7 @@ resource "aws_lb_listener_rule" "listener" {
 
   dynamic "condition" {
     for_each = [
-      for condition_rule in each.value.conditions : condition_rule if length(lookup(condition_rule, "host_headers", [])) > 0
+      for condition_rule in each.value.conditions : condition_rule if length(coalesce(lookup(condition_rule, "host_headers", []), [])) > 0
     ]
 
     content {
@@ -176,7 +176,7 @@ resource "aws_lb_listener_rule" "listener" {
 
   dynamic "condition" {
     for_each = [
-      for condition_rule in each.value.conditions : condition_rule if length(lookup(condition_rule, "http_headers", [])) > 0
+      for condition_rule in each.value.conditions : condition_rule if length(coalesce(lookup(condition_rule, "http_headers", []), [])) > 0
     ]
 
     content {
@@ -193,7 +193,7 @@ resource "aws_lb_listener_rule" "listener" {
 
   dynamic "condition" {
     for_each = [
-      for condition_rule in each.value.conditions : condition_rule if length(lookup(condition_rule, "http_request_methods", [])) > 0
+      for condition_rule in each.value.conditions : condition_rule if length(coalesce(lookup(condition_rule, "http_request_methods", []), [])) > 0
     ]
 
     content {
@@ -205,7 +205,7 @@ resource "aws_lb_listener_rule" "listener" {
 
   dynamic "condition" {
     for_each = [
-      for condition_rule in each.value.conditions : condition_rule if length(lookup(condition_rule, "path_patterns", [])) > 0
+      for condition_rule in each.value.conditions : condition_rule if length(coalesce(lookup(condition_rule, "path_patterns", []), [])) > 0
     ]
 
     content {
@@ -217,7 +217,7 @@ resource "aws_lb_listener_rule" "listener" {
 
   dynamic "condition" {
     for_each = [
-      for condition_rule in each.value.conditions : condition_rule if length(lookup(condition_rule, "query_strings", [])) > 0
+      for condition_rule in each.value.conditions : condition_rule if length(coalesce(lookup(condition_rule, "query_strings", []), [])) > 0
     ]
 
     content {
@@ -234,7 +234,7 @@ resource "aws_lb_listener_rule" "listener" {
 
   dynamic "condition" {
     for_each = [
-      for condition_rule in each.value.conditions : condition_rule if length(lookup(condition_rule, "source_ips", [])) > 0
+      for condition_rule in each.value.conditions : condition_rule if length(coalesce(lookup(condition_rule, "source_ips", []), [])) > 0
     ]
 
     content {
