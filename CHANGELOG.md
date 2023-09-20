@@ -1,3 +1,9 @@
+## 0.4.5
+
+BUG FIXES:
+
+* Fixed having a subset of possible lb_conditions.
+
 ## 0.4.4
 
 BUG FIXES:
