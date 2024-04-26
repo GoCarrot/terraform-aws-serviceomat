@@ -23,6 +23,10 @@ terraform {
   }
 }
 
+terraform {
+  required_version = ">= 1.3.0"
+}
+
 data "aws_default_tags" "tags" {}
 
 data "aws_ssm_parameter" "account-info" {
