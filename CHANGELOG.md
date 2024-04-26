@@ -1,3 +1,9 @@
+## 0.4.6
+
+ENHANCEMENTS:
+
+* Declare that Terraform 1.3+ is required.
+
 ## 0.4.5
 
 BUG FIXES:
