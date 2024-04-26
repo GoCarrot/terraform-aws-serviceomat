@@ -216,7 +216,7 @@ variable "tags" {
 variable "warm_pool" {
   type        = bool
   description = "Allow the ASG to create a warm pool with default configuration."
-  default     = true
+  default     = false
 }
 
 variable "lb_deregistration_delay" {
