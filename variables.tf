@@ -12,11 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-variable "account_canonical_slug" {
-  description = "The canonical slug of the account that the service is being deployed in."
-  type        = string
-}
-
 variable "service_name" {
   description = "The name of the service."
   type        = string

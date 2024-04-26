@@ -28,13 +28,18 @@ terraform {
 }
 
 data "aws_default_tags" "tags" {}
+data "aws_caller_identity" "current" {}
 
 data "aws_ssm_parameter" "account-info" {
   provider = aws.meta
 
-  name = "/omat/account_registry/${var.account_canonical_slug}"
+  name = "/omat/account_id_registry/${data.aws_caller_identity.current.account_id}"
 }
 
+# I tried to get rid of this by reading the prefix from the
+# account-info param and getting the first component, but it caused
+# terraform to error in a bizarre way in cases where a downstream service
+# on an earlier version relied on one of our outputs (other cases not tested).
 data "aws_ssm_parameter" "organization-prefix" {
   provider = aws.meta
 
