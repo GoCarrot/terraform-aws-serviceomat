@@ -1,0 +1,32 @@
+## template: jinja
+#cloud-config
+hostname: "${hostname_template}"
+%{if length(packages) > 0 ~}
+packages:
+%{for package in packages ~}
+  - ${package}
+%{endfor ~}
+%{endif ~}
+%{if length(write_files) > 0 ~}
+write_files:
+%{for file in write_files ~}
+  - path: ${file["path"]}
+    owner: root:root
+    content: |
+     ${indent(5, file["content"])}
+%{endfor ~}
+%{endif ~}
+%{if length(runcmds) > 0 ~}
+runcmd:
+%{for runcmd in runcmds ~}
+  - |
+   ${runcmd}
+%{endfor ~}
+%{endif ~}
+%{if length(bootcmds) > 0 ~}
+bootcmd:
+%{for bootcmd in bootcmds ~}
+  - |
+   ${bootcmd}
+%{endfor ~}
+%{endif ~}

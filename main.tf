@@ -46,12 +46,19 @@ data "aws_ssm_parameter" "organization-prefix" {
   name = "/omat/organization_prefix"
 }
 
+data "aws_ssm_parameters_by_path" "core-config" {
+  provider = aws.meta
+
+  path      = local.core_config_prefix
+  recursive = true
+}
+
 locals {
-  setup_lb = length(var.lb_listener_arns) > 0
-  service  = var.service_name
+  setup_lb = length(local.conditions) > 0
+  service  = join("-", compact([var.service_name, var.component_name]))
 
   listeners = [
-    for key, value in var.lb_listener_arns : {
+    for key, value in local.lb_listener_arns : {
       key   = key
       value = value
     }
@@ -96,11 +103,63 @@ locals {
   create_role = var.create_role
 
   account_info        = jsondecode(nonsensitive(data.aws_ssm_parameter.account-info.value))
+  param_prefix        = local.account_info["prefix"]
   organization_prefix = nonsensitive(data.aws_ssm_parameter.organization-prefix.value)
+  core_config_prefix  = "${local.param_prefix}/config/core"
+  network_level       = var.network_level
+
+  always_required_config = ["config_backup_bucket", "${local.network_level}_service_subnet_ids"]
+  web_required_config    = ["lb_security_group_ids", "listener_arns"]
+  mandatory_config       = local.setup_lb ? concat(local.always_required_config, local.web_required_config) : local.always_required_config
+  core_config = {
+    for config in local.mandatory_config : config => nonsensitive(data.aws_ssm_parameters_by_path.core-config.values[index(data.aws_ssm_parameters_by_path.core-config.names, "${local.core_config_prefix}/${config}")])
+  }
+
+  subnet_ids            = coalescelist(var.subnet_ids, split(",", local.core_config["${var.network_level}_service_subnet_ids"]))
+  lb_security_group_ids = coalesce(var.lb_security_group_ids, jsondecode(lookup(local.core_config, "lb_security_group_ids", "{}")))
+  lb_listener_arns      = coalesce(var.lb_listener_arns, jsondecode(lookup(local.core_config, "listener_arns", "{}")))
+  config_backup_bucket  = local.core_config["config_backup_bucket"]
+
+  module_dropins = {
+    "/etc/teak-configurator/30_fallbacks.yml.conf" = { bucket = local.config_backup_bucket }
+  }
+
+  module_files = [for dropin_path, template_vars in local.module_dropins :
+    {
+      path    = dropin_path,
+      content = length(template_vars) > 0 ? templatefile("${path.module}/dropins/${dropin_path}", template_vars) : file("${path.module}/dropins/${dropin_path}")
+    }
+  ]
+
+  files = concat(
+    local.module_files,
+    [for dropin_path, template_vars in var.dropins :
+      {
+        path    = dropin_path,
+        content = length(template_vars) > 0 ? templatefile("${path.root}/dropins/${dropin_path}", template_vars) : file("${path.root}/dropins/${dropin_path}")
+      }
+    ]
+  )
+
+  hostname_template = join("-", compact([var.component_name, "{{ v1.availability_zone }}", "{{ v1.local_hostname }}"]))
+  runcmds           = length(var.firstboot_services) > 0 ? ["systemctl start ${join(" ", formatlist("%s.service", var.firstboot_services))} --no-block"] : []
+  bootcmds          = length(var.enabled_services) > 0 ? ["systemctl enable ${join(" ", formatlist("%s.service", var.enabled_services))} --now --no-block"] : []
+  packages          = var.packages
+  default_user_data = templatefile(
+    "${path.module}/templates/user_data.yml.tftpl",
+    {
+      write_files       = local.files
+      runcmds           = local.runcmds
+      packages          = local.packages
+      hostname_template = local.hostname_template
+      bootcmds          = local.bootcmds
+    }
+  )
+  user_data = coalesce(var.user_data, local.default_user_data)
 }
 
 data "aws_subnet" "exemplar" {
-  id = var.subnet_ids[0]
+  id = local.subnet_ids[0]
 }
 
 resource "aws_security_group" "sg" {
@@ -114,7 +173,7 @@ resource "aws_security_group" "sg" {
 }
 
 resource "aws_security_group_rule" "lb-ingress" {
-  for_each = local.setup_lb ? var.lb_security_group_ids : {}
+  for_each = local.setup_lb ? local.lb_security_group_ids : {}
 
   security_group_id = aws_security_group.sg[0].id
 
@@ -143,14 +202,14 @@ resource "aws_lb_target_group" "tg" {
   deregistration_delay = var.lb_deregistration_delay
 
   health_check {
-    enabled             = lookup(var.health_check, "enabled", true)
-    healthy_threshold   = lookup(var.health_check, "healthy_threshold", 3)
-    unhealthy_threshold = lookup(var.health_check, "unhealthy_threshold", 3)
-    interval            = lookup(var.health_check, "interval", 30)
-    timeout             = lookup(var.health_check, "timeout", 5)
-    matcher             = lookup(var.health_check, "matcher", null)
-    path                = lookup(var.health_check, "path", null)
-    port                = lookup(var.health_check, "port", "traffic-port")
+    enabled             = var.health_check["enabled"]
+    healthy_threshold   = var.health_check["healthy_threshold"]
+    unhealthy_threshold = var.health_check["unhealthy_threshold"]
+    interval            = var.health_check["interval"]
+    timeout             = var.health_check["timeout"]
+    matcher             = var.health_check["matcher"]
+    path                = var.health_check["path"]
+    port                = var.health_check["port"]
   }
 
   tags = local.tags
@@ -263,7 +322,7 @@ resource "aws_ssm_parameter" "lb_listener_arns" {
 
   name  = "${local.account_info["prefix"]}/config/${local.service}/listener_arns"
   type  = "String"
-  value = jsonencode(var.lb_listener_arns)
+  value = jsonencode(local.lb_listener_arns)
 
   tags = local.tags
 }
@@ -319,11 +378,6 @@ data "aws_ami" "default-ami" {
   }
 }
 
-locals {
-  root_ebs_volume = [for volume in data.aws_ami.default-ami.block_device_mappings : volume if volume.device_name == data.aws_ami.default-ami.root_device_name][0]
-  min_ebs_size    = local.root_ebs_volume.ebs.volume_size
-}
-
 data "aws_iam_policy_document" "allow_ec2_assume" {
   statement {
     effect  = "Allow"
@@ -374,7 +428,7 @@ resource "aws_iam_role_policy_attachment" "default-policies" {
 
 locals {
   instance_profile_arn = try(coalescelist(try(compact([var.iam_instance_profile]), []), aws_iam_instance_profile.instance-profile[*].arn), [])
-  subnet_randomizer    = { for id in var.subnet_ids : sha256("${local.service}-${id}") => id }
+  subnet_randomizer    = { for id in local.subnet_ids : sha256("${local.service}-${id}") => id }
   subnet               = local.subnet_randomizer[sort(keys(local.subnet_randomizer))[0]]
 }
 
@@ -394,7 +448,7 @@ resource "aws_launch_template" "template" {
     device_name = "/dev/xvda"
 
     ebs {
-      volume_size           = max(var.volume_size, local.min_ebs_size)
+      volume_size           = var.volume_size
       delete_on_termination = true
       volume_type           = "gp3"
       iops                  = 3000
@@ -450,7 +504,7 @@ resource "aws_launch_template" "template" {
     }
   }
 
-  user_data = var.user_data != null && length(var.user_data) > 0 ? base64encode(var.user_data) : ""
+  user_data = local.user_data != null && length(local.user_data) > 0 ? base64encode(local.user_data) : ""
 
   tags = local.tags
 }
@@ -469,7 +523,7 @@ resource "aws_autoscaling_group" "asg" {
   min_size = 0
   max_size = 0
 
-  vpc_zone_identifier = var.subnet_ids
+  vpc_zone_identifier = local.subnet_ids
   placement_group     = try(aws_placement_group.group[0].id, null)
   enabled_metrics     = var.asg_metrics
 

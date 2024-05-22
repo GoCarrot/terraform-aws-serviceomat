@@ -17,14 +17,60 @@ variable "service_name" {
   type        = string
 }
 
+variable "network_level" {
+  type        = string
+  description = "The network isolation level the service runs in. One of 'public', 'protected', 'private'"
+}
+
+variable "component_name" {
+  type        = string
+  default     = null
+  description = <<-EOM
+If a service is comprised of multiple deployed components they would be differentiated by component name.
+For example, if a service has both web servers and background job servers it may be deployed as two
+serviceomat "services" with the same service_name, but different component_names. This lets you
+keep track of what serviceomat "services" are related, and which are completely distinct.
+EOM
+}
+
+variable "dropins" {
+  type        = map(map(any))
+  default     = {}
+  description = <<-EOM
+  The keys in the map serve as both the source and destination path. The file will be read from $${path.root}/dropins/$${key}
+  and placed into $${key} on any servers through cloud-init write_files. The values are maps which will be templated into
+  the file read locally using Terraform's templatefile function.
+EOM
+}
+
+variable "packages" {
+  type        = list(string)
+  default     = []
+  description = <<-EOM
+  A list of packages to install through cloud-init at server boot.
+EOM
+}
+
+variable "firstboot_services" {
+  type        = list(string)
+  default     = []
+  description = <<-EOM
+  A list of systemd services to enable and start on the server's very first boot using cloud-init runcmd.
+EOM
+}
+
+variable "enabled_services" {
+  type        = list(string)
+  default     = []
+  description = <<-EOM
+  A list of systemd services to enable and start on all boots using cloud-init bootcmd.
+EOM
+}
+
 variable "subnet_ids" {
   type        = list(string)
   description = "A list of subnet ids that service servers may run in. Must all be in the same VPC."
-
-  validation {
-    condition     = length(var.subnet_ids) >= 1
-    error_message = "At least one subnet_id must be specified for the service."
-  }
+  default     = []
 }
 
 variable "instance_type" {
@@ -41,13 +87,12 @@ variable "instance_security_group_ids" {
 variable "volume_size" {
   type        = number
   description = "The size of the root volume for service instances in GiB. If this is smaller than the size of the root volume for the AMI, will be increased to the size of the root volume for the AMI."
-  default     = 2
 }
 
 variable "detailed_instance_monitoring" {
   type        = bool
   description = "Use detailed instance monitoring (1m interval) on service instances."
-  default     = true
+  default     = false
 }
 
 variable "min_instances" {
@@ -75,13 +120,13 @@ variable "ami_owner_id" {
 variable "lb_listener_arns" {
   type        = map(string)
   description = "Map of ARNs for ALB listeners to receive traffic from. Keys should be known at plan time. If empty, this service will not be configured to receive web traffic from an ALB."
-  default     = {}
+  default     = null
 }
 
 variable "lb_security_group_ids" {
   type        = map(string)
   description = "Map of security groups attached to an ALB. Keys should be known at plan time. If lb_listener_arns is non-empty, this module will create a security group which permits ingress on var.port from all security groups here."
-  default     = {}
+  default     = null
 }
 
 variable "port" {
@@ -97,23 +142,24 @@ variable "protocol" {
 }
 
 variable "health_check" {
-  type        = map(any)
+  type = object({
+    enabled             = optional(bool, true)
+    healthy_threshold   = optional(number, 3)
+    interval            = optional(number, 30)
+    matcher             = optional(string, "200")
+    path                = optional(string, "/")
+    port                = optional(string, "traffic-port")
+    protocol            = optional(string, "HTTP")
+    timeout             = optional(number, 30)
+    unhealthy_threshold = optional(number, 3)
+  })
   description = <<-EOT
 The health check configuration for the target group. Unspecified parameters will get terraform defaults as of AWS provider 4.1.0.
 Refer to https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_target_group#health_check."
 Only used if the service is receiving web traffic from an ALB.
 EOT
 
-  default = {
-    enabled             = true
-    healthy_threshold   = 2
-    unhealthy_threshold = 2
-    interval            = 5
-    timeout             = 4
-    matcher             = "200-299"
-    path                = "/"
-    port                = "traffic-port"
-  }
+  default = {}
 }
 
 variable "load_balancing_algorithm_type" {
