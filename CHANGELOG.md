@@ -1,3 +1,9 @@
+## 0.4.6
+
+BUG FIXES:
+
+* Fixed path_patterns in lb_conditions
+
 ## 0.4.5
 
 BUG FIXES:
