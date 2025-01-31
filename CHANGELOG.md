@@ -1,12 +1,18 @@
+## 0.5.1
+
+BUG FIXES:
+
+* Fixed path_patterns in lb_conditions
+
 ## 0.5.0
 
 * Too many breaking changes to list.
 
 ## 0.4.6
 
-ENHANCEMENTS:
+BUG FIXES:
 
-* Declare that Terraform 1.3+ is required.
+* Fixed path_patterns in lb_conditions
 
 ## 0.4.5
 
