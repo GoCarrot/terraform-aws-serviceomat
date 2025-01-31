@@ -139,7 +139,7 @@ variable "lb_conditions" {
           host_headers         = optional(list(string)),
           http_headers         = optional(list(object({ http_header_name = string, values = list(string) }))),
           http_request_methods = optional(list(string)),
-          path_patthers        = optional(list(string)),
+          path_patterns        = optional(list(string)),
           query_string         = optional(list(object({ key = optional(string), value = string }))),
           source_ips           = optional(list(string))
         })
