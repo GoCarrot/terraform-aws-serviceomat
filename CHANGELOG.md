@@ -1,3 +1,10 @@
+## 0.5.2
+
+ENHNACEMENTS:
+
+* Add boot_scripts input to execute arbitrary bash scripts at server boot.
+* launch_template output is now marked as sensitive.
+
 ## 0.5.1
 
 BUG FIXES:
