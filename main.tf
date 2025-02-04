@@ -141,9 +141,13 @@ locals {
     ]
   )
 
+  bootfiles = [for dropin_path, template_vars in var.boot_scripts :
+    indent(5, length(template_vars) > 0 ? templatefile("${path.root}/dropins/${dropin_path}", template_vars) : file("${path.root}/dropins/${dropin_path}"))
+  ]
+
   hostname_template = join("-", compact([var.component_name, "{{ v1.availability_zone }}", "{{ v1.local_hostname }}"]))
   runcmds           = length(var.firstboot_services) > 0 ? ["systemctl start ${join(" ", formatlist("%s.service", var.firstboot_services))} --no-block"] : []
-  bootcmds          = length(var.enabled_services) > 0 ? ["systemctl enable ${join(" ", formatlist("%s.service", var.enabled_services))} --now --no-block"] : []
+  bootcmds          = concat(length(local.bootfiles) > 0 ? local.bootfiles : [], length(var.enabled_services) > 0 ? ["systemctl enable ${join(" ", formatlist("%s.service", var.enabled_services))} --now --no-block"] : [])
   packages          = var.packages
   default_user_data = templatefile(
     "${path.module}/templates/user_data.yml.tftpl",

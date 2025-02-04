@@ -1,0 +1,8 @@
+## template: jinja
+#cloud-config
+hostname: "{{ v1.availability_zone }}-{{ v1.local_hostname }}"
+write_files:
+  - path: /etc/teak-configurator/30_fallbacks.yml.conf
+    owner: root:root
+    content: |
+     fallback_s3_bucket: configbucket

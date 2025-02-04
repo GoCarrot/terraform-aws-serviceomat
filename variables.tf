@@ -67,6 +67,16 @@ variable "enabled_services" {
 EOM
 }
 
+variable "boot_scripts" {
+  type        = map(map(any))
+  default     = {}
+  description = <<-EOM
+  A list of files to be run as additional scripts at instance boot time. The keys in the map serve as the source path.
+  The file will be read from $${path.root}/dropins/$${key} and placed into the list of cloud-init bootcmds, prior to any enabled_services.
+  The values are maps which will be templated into the file read locally using Terraform's templatefile function.
+EOM
+}
+
 variable "subnet_ids" {
   type        = list(string)
   description = "A list of subnet ids that service servers may run in. Must all be in the same VPC."

@@ -1,0 +1,27 @@
+## template: jinja
+#cloud-config
+hostname: "{{ v1.availability_zone }}-{{ v1.local_hostname }}"
+write_files:
+  - path: /etc/teak-configurator/30_fallbacks.yml.conf
+    owner: root:root
+    content: |
+     fallback_s3_bucket: configbucket
+     
+bootcmd:
+  - |
+   core_count=$(nproc --all)
+     jobs_count=$((core_count - 1))
+     DROP_IN="/etc/systemd/system/teak-configurator.service.d"
+     mkdir -p $DROP_IN
+     UPHOLDS_FILE="${DROP_IN}/40_upholds.conf"
+     printf "[Unit]\n" > $UPHOLDS_FILE
+     
+     for i in $(seq 0 $jobs_count)
+     do
+       DROP_IN="/etc/systemd/system/teak-test-sidekiq@${i}.service.d"
+       mkdir -p $DROP_IN
+       printf "[Service]\nAllowedCPUs=${i}\n" > "${DROP_IN}/40_cpu_lock.conf"
+       printf "Upholds=teak-test-sidekiq@${i}.service\n" >> $UPHOLDS_FILE
+     done
+     
+     systemctl daemon-reload
