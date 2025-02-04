@@ -1,0 +1,1 @@
+This is purely for files we want to use as part of our test suite. Due to the construction of the module and how terraform works, they have to live here. Terraform considers the top level directory to be both path.module and path.root when running tests.

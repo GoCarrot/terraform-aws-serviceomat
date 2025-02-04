@@ -1,0 +1,16 @@
+core_count=${coalesce(instance_count, "$(nproc --all)")}
+jobs_count=$((core_count - 1))
+DROP_IN="/etc/systemd/system/teak-configurator.service.d"
+mkdir -p $DROP_IN
+UPHOLDS_FILE="$${DROP_IN}/40_upholds.conf"
+printf "[Unit]\n" > $UPHOLDS_FILE
+
+for i in $(seq 0 $jobs_count)
+do
+  DROP_IN="/etc/systemd/system/teak-${service_name}-sidekiq@$${i}.service.d"
+  mkdir -p $DROP_IN
+  printf "[Service]\nAllowedCPUs=$${i}\n" > "$${DROP_IN}/40_cpu_lock.conf"
+  printf "Upholds=teak-${service_name}-sidekiq@$${i}.service\n" >> $UPHOLDS_FILE
+done
+
+systemctl daemon-reload
