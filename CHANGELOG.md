@@ -1,3 +1,9 @@
+## 0.5.3
+
+BUG FIXES:
+
+* launch_template output no longer marked as sensitive.
+
 ## 0.5.2
 
 ENHNACEMENTS:
