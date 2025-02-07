@@ -25,7 +25,6 @@ output "target_group" {
 output "launch_template" {
   description = "The EC2 launch template created by this module."
   value       = aws_launch_template.template
-  sensitive   = true
 }
 
 output "iam_role" {

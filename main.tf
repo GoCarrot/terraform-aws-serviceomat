@@ -369,7 +369,7 @@ data "aws_ami_ids" "built-ami" {
 }
 
 locals {
-  default_ami_id = coalescelist(try(data.aws_ami_ids.built-ami[0].ids, []), [data.aws_ssm_parameter.stub-ami[local.instance_arch].value])[0]
+  default_ami_id = coalescelist(try(data.aws_ami_ids.built-ami[0].ids, []), [nonsensitive(data.aws_ssm_parameter.stub-ami[local.instance_arch].value)])[0]
 }
 
 data "aws_ami" "default-ami" {
