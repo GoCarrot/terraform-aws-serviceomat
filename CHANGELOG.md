@@ -1,3 +1,9 @@
+## 0.5.4
+
+ENHANCEMENTS:
+
+* Added iam_instance_profile output
+
 ## 0.5.3
 
 BUG FIXES:

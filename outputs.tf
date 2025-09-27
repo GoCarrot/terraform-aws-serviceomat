@@ -37,6 +37,11 @@ output "instance_profile" {
   value       = try(aws_iam_instance_profile.instance-profile[0], null)
 }
 
+output "iam_instance_profile" {
+  description = "The IAM instance profile associated with this service."
+  value       = coalesce(var.iam_instance_profile, try(aws_iam_instance_profile.instance-profile[0], null))
+}
+
 output "security_group" {
   description = "The security group created to permit ingress from the load balancer to instances. Null if the service is not behind an ALB."
   value       = try(aws_security_group.sg[0], null)
