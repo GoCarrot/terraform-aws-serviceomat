@@ -1,3 +1,13 @@
+## 0.5.5
+
+BREAKING CHANGES:
+
+* Rename iam_instance_profile output to iam_instance_profile_arn
+
+BUG FIXES:
+
+* Valid iam_instance_profile_arn output
+
 ## 0.5.4
 
 ENHANCEMENTS:
