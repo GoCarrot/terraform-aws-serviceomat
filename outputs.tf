@@ -37,9 +37,9 @@ output "instance_profile" {
   value       = try(aws_iam_instance_profile.instance-profile[0], null)
 }
 
-output "iam_instance_profile" {
+output "iam_instance_profile_arn" {
   description = "The IAM instance profile associated with this service."
-  value       = coalesce(var.iam_instance_profile, try(aws_iam_instance_profile.instance-profile[0], null))
+  value       = coalesce(var.iam_instance_profile, try(aws_iam_instance_profile.instance-profile[0].arn, null))
 }
 
 output "security_group" {
