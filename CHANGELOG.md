@@ -1,3 +1,9 @@
+## 0.5.6
+
+ENHANCEMENTS:
+
+* Allow aws provider 6.x
+
 ## 0.5.5
 
 BREAKING CHANGES:
